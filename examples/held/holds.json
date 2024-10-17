@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1",
+  "holds": [
+    {
+      "id": "matter-4411",
+      "status": "active",
+      "records": ["session-1900"],
+      "classes": [],
+      "description": "Both records below are long past their retention period; only one of them is under this hold."
+    }
+  ]
+}

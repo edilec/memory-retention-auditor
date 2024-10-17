@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1",
+  "records": [
+    {
+      "id": "session-2031",
+      "class": "chat-transcript",
+      "created": "2026-07-01",
+      "lastAccessed": "2026-09-10",
+      "state": "retained",
+      "readers": ["support-agent"],
+      "subject": "subject-a1",
+      "preview": "SYNTHETIC EXAMPLE CONTENT, never printed by this tool"
+    },
+    {
+      "id": "memory-0007",
+      "class": "agent-memory",
+      "created": "2026-01-05",
+      "lastAccessed": "2026-02-01",
+      "state": "retained",
+      "readers": ["reviewer"],
+      "note": "SYNTHETIC EXAMPLE CONTENT, never printed by this tool"
+    },
+    {
+      "id": "session-1998",
+      "class": "chat-transcript",
+      "created": "2026-01-01",
+      "lastAccessed": "2026-02-01",
+      "state": "deleted",
+      "readers": ["support-agent"]
+    }
+  ]
+}

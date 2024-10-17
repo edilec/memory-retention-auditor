@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1",
+  "version": "2026-09-1",
+  "classes": [
+    {
+      "id": "chat-transcript",
+      "basis": "lastAccessed",
+      "retainDays": 30,
+      "requiresEvidence": true,
+      "allowedReaders": ["support-agent"],
+      "description": "Support conversations, kept 30 days after the last time anybody opened one."
+    },
+    {
+      "id": "agent-memory",
+      "basis": "created",
+      "retainDays": 365,
+      "requiresEvidence": false,
+      "allowedReaders": ["reviewer", "support-agent"]
+    }
+  ]
+}

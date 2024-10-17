@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1",
+  "evidence": [
+    {
+      "record": "session-1998",
+      "method": "purge",
+      "verifiedBy": "ops-platform",
+      "recordedOn": "2026-03-05"
+    }
+  ]
+}
