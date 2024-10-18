@@ -46,7 +46,9 @@ import { parseDate } from './dates.mjs'
 import { compileEvidence, compileHolds, compilePolicy, compileRecords } from './documents.mjs'
 import { parseFailureDetail } from './parse-failure.mjs'
 import { RULE_SEVERITY, severityOf } from './rules.mjs'
-import { byCodeUnit, decodeUtf8, excerpt, hasForbiddenCharacter, isPlainObject } from './text.mjs'
+import {
+  LOCATION_LIMIT, byCodeUnit, decodeUtf8, excerpt, hasForbiddenCharacter, isPlainObject, locationText,
+} from './text.mjs'
 
 export const TOOL_ID = 'memory-retention-auditor'
 export const REPORT_SCHEMA_VERSION = '1'
@@ -96,7 +98,6 @@ export const HARD_LIMITS = Object.freeze({
 
 const MESSAGE_LIMIT = 400
 const SUGGESTION_LIMIT = 300
-const LOCATION_LIMIT = 200
 const MAX_NAME_LENGTH = 200
 
 const ALLOWED_OPTIONS = Object.freeze([
@@ -207,7 +208,7 @@ export function createFinding(row) {
     ruleId: row.ruleId,
     severity: severityOf(row.ruleId),
     message: excerpt(row.message, MESSAGE_LIMIT),
-    location: { file: excerpt(row.file, LOCATION_LIMIT), pointer: excerpt(row.pointer, LOCATION_LIMIT) },
+    location: { file: locationText(row.file, LOCATION_LIMIT), pointer: locationText(row.pointer, LOCATION_LIMIT) },
   }
   if (row.suggestion !== undefined) finding.suggestion = excerpt(row.suggestion, SUGGESTION_LIMIT)
   return finding
@@ -682,6 +683,7 @@ export {
 export { DestinationError, assertWritableDestination } from './write-guard.mjs'
 export { parseFailureDetail } from './parse-failure.mjs'
 export {
-  EXCERPT_LIMIT, MAX_IDENTIFIER_LENGTH, MAX_PRIVATE_LENGTH, byCodeUnit, decodeUtf8, describeValue,
-  excerpt, hasForbiddenCharacter, isIdentifier, isPlainObject, isPrivateContent,
+  EXCERPT_LIMIT, LOCATION_LIMIT, MAX_IDENTIFIER_LENGTH, MAX_PRIVATE_LENGTH, byCodeUnit, decodeUtf8,
+  describeValue, excerpt, hasForbiddenCharacter, isIdentifier, isPlainObject, isPrivateContent,
+  locationText, renderable,
 } from './text.mjs'

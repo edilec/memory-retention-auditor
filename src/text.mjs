@@ -92,7 +92,37 @@ const FORBIDDEN = new RegExp(
  * anywhere, rather than checking the one field somebody remembered.
  */
 export function hasForbiddenCharacter(value) {
-  return FORBIDDEN.test(String(value))
+  return FORBIDDEN.test(renderable(value))
+}
+
+/**
+ * Text for a value that may refuse to become text.
+ *
+ * `String(value)` is not total. `JSON.parse('{"toString": {}}')` produces an
+ * object whose `toString` is not callable and whose inherited `valueOf` answers
+ * with the object itself, so converting it throws `Cannot convert object to
+ * primitive value`. That throw happens at the sanitisation boundary, which is
+ * downstream of every check that would have refused the value -- so one
+ * malformed declaration takes the whole run down with it, and the process exits
+ * 2 with an EMPTY stdout: the shape this contract reserves for a configuration
+ * error. Every other document in the same run loses its findings too.
+ *
+ * A value that cannot be rendered is DESCRIBED by its shape and never
+ * reproduced. `[object]` and `[array]` carry nothing from the value itself, so
+ * a poisoned field sitting beside a credential cannot pull the credential into
+ * the report on its way past. The field is still refused by whichever check
+ * asked for it, and the run is still `incomplete`; this function only makes
+ * sure the refusal gets written down instead of aborting the run.
+ *
+ * Precedent: `workflow-dry-run-planner/src/document.mjs`, function `renderable`.
+ */
+export function renderable(value) {
+  if (typeof value === 'string') return value
+  try {
+    return String(value)
+  } catch {
+    return Array.isArray(value) ? '[array]' : '[object]'
+  }
 }
 
 export const EXCERPT_LIMIT = 160
@@ -112,9 +142,42 @@ export const MAX_PRIVATE_LENGTH = 10000
  * invented a finding that was never emitted.
  */
 export function excerpt(value, limit = EXCERPT_LIMIT) {
-  const flattened = String(value).replace(CONTROL, ' ').replace(/\s+/g, ' ').trim()
+  const flattened = renderable(value).replace(CONTROL, ' ').replace(/\s+/g, ' ').trim()
   if (flattened.length <= limit) return flattened
   return `${flattened.slice(0, limit)}...`
+}
+
+export const LOCATION_LIMIT = 200
+
+/**
+ * The global twin of `FORBIDDEN`, for stripping rather than testing. A `RegExp`
+ * carrying `g` holds `lastIndex` between calls, so `.test` is never called on
+ * this one and `.replace` is never called on that one.
+ */
+const FORBIDDEN_GLOBAL = new RegExp(FORBIDDEN.source, 'g')
+
+/**
+ * A location -- `location.file` or `location.pointer` -- rendered for output.
+ *
+ * This is deliberately *not* `excerpt`. The report contract says
+ * `location.file` is a path relative to the declared input root, and a consumer
+ * is entitled to resolve it. `excerpt` collapses every run of whitespace to one
+ * space and trims the ends, so a file genuinely named `my  tools.json` was
+ * reported as `my tools.json` and anybody resolving that path got ENOENT. A
+ * location is therefore stripped of the characters that must never reach output
+ * and bounded, and nothing else about it is rewritten.
+ *
+ * Stripping rather than substituting is the right choice here for the same
+ * reason: a space put where a control character was is a character the path
+ * does not contain. Neither can actually happen through the CLI -- every input
+ * name is refused by `validateName` if it carries one -- which is precisely why
+ * the guard is worth having: the day a location comes from somewhere else, it
+ * still cannot forge a line in the human summary.
+ */
+export function locationText(value, limit = LOCATION_LIMIT) {
+  const stripped = renderable(value).replace(FORBIDDEN_GLOBAL, '')
+  if (stripped.length <= limit) return stripped
+  return `${stripped.slice(0, limit)}...`
 }
 
 /**
