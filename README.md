@@ -122,6 +122,7 @@ those — become the deletion plan.
   },
   "plan": {
     "schemaVersion": "1",
+    "status": "pass",
     "version": "2026-09-1",
     "evaluatedOn": "2026-09-14",
     "deletions": ["session-1901"],
@@ -172,6 +173,21 @@ with no clock, host or run id. Two runs over the same inventory and the same
 date produce the same digest; any change to a disposition, a hold or an evidence
 entry produces a different one. That is what makes it usable as the thing a
 reviewer approves before anybody destroys anything.
+
+`plan.status` is the status of the run that produced it — `pass`, `fail` or
+`incomplete` — and it is inside the digest, so approving the bytes approves the
+completeness claim too. The document is written on its own and read on its own,
+so it has to say that on its own: without it, `--out` handed a reviewer a
+signed list of records to destroy from a run that had exited 2, and the only
+warning was a stderr line that `--json` suppresses.
+
+An `incomplete` plan can still carry deletions, and that is deliberate. A record
+whose class, age and hold status were all read is a record this run did decide
+about; emptying the list because a *different* record could not be decided would
+answer one unknown by discarding an answer. The two cases where the list really
+would be untrustworthy empty it at the source instead: an unread hold document
+leaves every record undecided, and a spent time budget withdraws every
+disposition.
 
 ### Writing it out
 

@@ -353,10 +353,27 @@ export function downgradeRows(result, ruleId) {
  * one. It is computed from the plan alone -- no clock, no host, no run id --
  * which is what makes it usable as the thing a reviewer approves before
  * anybody destroys anything.
+ *
+ * `status` is in the body, and inside the digest, because the document is
+ * written out on its own and read on its own. Without it, `--out` handed a
+ * reviewer a signed, digested list of records to destroy from a run that had
+ * exited 2 with a record it could not decide about, and nothing in the artefact
+ * said the audit had not completed: the warning existed only on a stderr line
+ * that `--json` suppresses and a consumer reading the file never sees. The
+ * deletions themselves are not withdrawn here -- a record whose class, age and
+ * hold status were all read is a record this run did decide about, and emptying
+ * the list would throw that away to describe a different record's problem. What
+ * the document owes a reviewer is the completeness of the run that produced it,
+ * said in the artefact rather than beside it, and inside the digest so that
+ * approving the bytes approves the completeness claim too. The two cases where
+ * the plan really is untrustworthy empty it at the source instead: an unread
+ * hold document leaves every record undecided, and a spent time budget calls
+ * `downgradeRows`.
  */
-export function createPlan(version, evaluatedOn, rows, deletions) {
+export function createPlan(status, version, evaluatedOn, rows, deletions) {
   const body = {
     schemaVersion: PLAN_SCHEMA_VERSION,
+    status,
     version,
     evaluatedOn,
     deletions,

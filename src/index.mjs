@@ -258,8 +258,8 @@ function buildReport(sink, state, limits) {
     else if (finding.severity === 'warning') warnings += 1
   }
 
-  const plan = createPlan(state.version, state.today, state.rows, state.deletions)
   const status = state.incomplete || truncated ? 'incomplete' : errors > 0 ? 'fail' : 'pass'
+  const plan = createPlan(status, state.version, state.today, state.rows, state.deletions)
 
   return {
     schemaVersion: REPORT_SCHEMA_VERSION,
