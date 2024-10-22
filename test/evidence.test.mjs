@@ -216,6 +216,72 @@ test('a refused hold entry has the same effect as an unreadable hold document', 
   assert.equal(report.status, 'incomplete')
 })
 
+/**
+ * A hold that named something unreadable is not a hold that named nothing.
+ *
+ * `hold-covers-nothing` used to answer both: a hold whose only record
+ * reference was refused reported "names no record and no class, so it protects
+ * nothing in this inventory", word for word what a hold with an empty list
+ * reports. That is the absent-versus-unreadable mistake this package splits so
+ * carefully for deletion evidence, made about the one document that stops a
+ * deletion.
+ */
+test('a hold whose every reference was refused is not reported as naming nothing', async () => {
+  const refused = await apiReport(fixture(
+    [record('session-1900', 'chat-transcript', { lastAccessed: '2026-01-01' })],
+    transcripts(),
+    [hold('matter-4411', 'active', [42])],
+    [],
+  ))
+
+  assert.equal(raisedRules(refused).includes('hold-coverage-unreadable'), true)
+  assert.equal(raisedRules(refused).includes('hold-covers-nothing'), false, 'an absence was asserted about a reference that is there')
+  assert.match(findingsFor(refused, 'hold-coverage-unreadable')[0].message, /not the same as naming nothing/)
+  assert.equal(refused.status, 'incomplete')
+
+  const empty = await apiReport(fixture(
+    [record('session-1900', 'chat-transcript', { lastAccessed: '2026-01-01' })],
+    transcripts(),
+    [hold('matter-4411', 'active', [], [])],
+    [],
+  ))
+
+  assert.equal(raisedRules(empty).includes('hold-covers-nothing'), true)
+  assert.equal(raisedRules(empty).includes('hold-coverage-unreadable'), false, 'a hold that really does name nothing')
+  // The two messages must not be the same sentence, which is how the defect
+  // hid: both cases were true statements about an empty list.
+  assert.notEqual(
+    findingsFor(refused, 'hold-coverage-unreadable')[0].message,
+    findingsFor(empty, 'hold-covers-nothing')[0].message,
+  )
+})
+
+test('a class reference refused on a hold is told apart from a hold that names no class', async () => {
+  const report = await apiReport(fixture(
+    [record('session-1900', 'chat-transcript', { lastAccessed: '2026-01-01' })],
+    transcripts(),
+    [hold('matter-4411', 'active', [], [42])],
+    [],
+  ))
+
+  assert.equal(raisedRules(report).includes('hold-coverage-unreadable'), true)
+  assert.equal(raisedRules(report).includes('hold-covers-nothing'), false)
+  assert.match(findingsFor(report, 'hold-coverage-unreadable')[0].message, /1 record or class reference/)
+})
+
+test('a hold with one readable reference beside a refused one is neither of those things', async () => {
+  const report = await apiReport(fixture(
+    [record('session-1900', 'chat-transcript', { lastAccessed: '2026-01-01' })],
+    transcripts(),
+    [hold('matter-4411', 'active', ['session-1900', 42])],
+    [],
+  ))
+
+  assert.equal(raisedRules(report).includes('hold-coverage-unreadable'), false)
+  assert.equal(raisedRules(report).includes('hold-covers-nothing'), false)
+  assert.equal(raisedRules(report).includes('record-reference-invalid'), true)
+})
+
 test('the clean fixture passes, so every case above broke exactly one thing', async () => {
   const run = await cliReport(clean())
 

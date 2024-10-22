@@ -38,6 +38,7 @@ export const RULE_SEVERITY = Object.freeze({
   'evidence-invalid': 'error',
   'hold-class-unknown': 'error',
   'hold-coverage-unknown': 'error',
+  'hold-coverage-unreadable': 'error',
   'hold-covers-nothing': 'warning',
   'hold-duplicate': 'error',
   'hold-invalid': 'error',

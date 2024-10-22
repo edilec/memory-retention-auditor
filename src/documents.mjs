@@ -555,7 +555,27 @@ export function compileHolds(sink, file, value, limits) {
 
     refusedReferences += records.refused + classes.refused
     byId.set(raw.id, pointer)
-    entries.push({ id: raw.id, pointer, status, records: records.values, classes: classes.values })
+    /*
+     * The refusals are counted per hold, not only for the document.
+     *
+     * A hold whose only reference was refused has an empty `records` list and
+     * an empty `classes` list, which is byte-for-byte the shape of a hold that
+     * named nothing at all -- and the audit used to report both as "names no
+     * record and no class, so it protects nothing in this inventory". That
+     * sentence asserts an absence about a reference sitting in the file, which
+     * is the same absent-versus-unreadable mistake this package splits so
+     * carefully for deletion evidence. These two numbers are what lets the
+     * audit tell the two apart.
+     */
+    entries.push({
+      id: raw.id,
+      pointer,
+      status,
+      records: records.values,
+      recordsRefused: records.refused,
+      classes: classes.values,
+      classesRefused: classes.refused,
+    })
   }
 
   entries.sort((left, right) => (left.id === right.id ? 0 : left.id < right.id ? -1 : 1))

@@ -295,7 +295,28 @@ export function buildPlan(sink, files, compiled, context, budget) {
         suggestion: 'Reconcile the hold against the retention policy.',
       })
     }
-    if (covers === 0 && hold.records.length === 0 && hold.classes.length === 0) {
+    /*
+     * "Names nothing" and "named something nobody could read" are different
+     * facts, and the second must never be reported as the first.
+     *
+     * Both leave `records` and `classes` empty here. Answering them with one
+     * sentence tells a reviewer that a hold protects nothing when the reference
+     * that would have said what it protects is sitting in the file, refused --
+     * and a hold is the one thing in this package that stops a deletion. The
+     * same split is already made for deletion evidence
+     * (`deletion-evidence-missing` against `deletion-evidence-unknown`); it is
+     * made here too.
+     */
+    const refused = hold.recordsRefused + hold.classesRefused
+    if (hold.records.length === 0 && hold.classes.length === 0 && refused > 0) {
+      sink.add({
+        file: files.holds,
+        pointer: hold.pointer,
+        ruleId: 'hold-coverage-unreadable',
+        message: `Hold "${excerpt(hold.id, 120)}" names ${refused} record or class reference(s) and none of them could be read, so what it protects is unknown. That is not the same as naming nothing, and it is not reported as such.`,
+        suggestion: 'Correct the refused references; the finding on each one says what was wrong with it.',
+      })
+    } else if (covers === 0 && hold.records.length === 0 && hold.classes.length === 0) {
       sink.add({
         file: files.holds,
         pointer: hold.pointer,

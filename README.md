@@ -165,7 +165,13 @@ inside one — the set of held records is unknown and **nothing in the run is
 planned for deletion**. The hold nobody could read is exactly the hold that
 would have stopped a deletion.
 
-### The plan is versioned
+A hold that named references none of which could be read raises
+`hold-coverage-unreadable`, never `hold-covers-nothing`. "It protects nothing"
+is an absence, and asserting it about a reference that is sitting in the file,
+refused, is the same mistake as reporting unreadable evidence as missing
+evidence.
+
+### The plan is versioned, and it says whether the audit finished
 
 `plan.version` is the `version` the policy declares, `plan.evaluatedOn` is the
 date you passed, and `plan.digest` is a SHA-256 over the plan body, computed

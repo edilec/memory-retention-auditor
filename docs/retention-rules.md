@@ -237,6 +237,7 @@ code cannot be edited at all.
 | `hold-coverage-unknown` | error | Part of the hold document went unread, so nothing in the run was planned for deletion. |
 | `hold-record-unknown` | error | A hold covers a record the inventory does not list: either the inventory is missing a record under hold or the hold is stale. |
 | `hold-class-unknown` | error | A hold covers a class the policy does not declare. |
+| `hold-coverage-unreadable` | error | A hold names references and every one of them was refused, so what it protects is unknown. Not the same as naming nothing, and never reported as naming nothing. |
 | `hold-covers-nothing` | warning | A hold names no record and no class. |
 
 ### Bounds and vacuity

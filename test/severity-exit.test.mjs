@@ -86,6 +86,9 @@ const ERROR_CASES = [
     [record('session-2031', 'chat-transcript')], transcripts, [hold('matter-1', 'released', [], ['nowhere'])],
   ), [], 1],
   ['hold-coverage-unknown', { ...base, 'holds.json': '{' }, [], 2],
+  ['hold-coverage-unreadable', fixture(
+    [record('session-2031', 'chat-transcript')], transcripts, [hold('matter-1', 'active', [42])],
+  ), [], 2],
   ['hold-duplicate', fixture(
     [record('session-2031', 'chat-transcript')], transcripts,
     [hold('matter-1', 'released'), hold('matter-1', 'active', ['session-2031'])],
