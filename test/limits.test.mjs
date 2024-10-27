@@ -82,6 +82,47 @@ for (const [limitKey, flags, ruleId, files] of cases) {
   })
 }
 
+/**
+ * `maxFileBytes` at its exact boundary.
+ *
+ * Every other limit here is a count, and a count is bitten by a case that
+ * declares one more item than the bound allows: shifting any of those
+ * comparisons by one fails a named test. `maxFileBytes` was the exception --
+ * `info.size > limits.maxFileBytes` could be moved to `+ 1` and the whole suite
+ * stayed green, because "2 bytes" is so far below any document that the
+ * boundary itself was never approached.
+ *
+ * So this case measures the real byte length of the file it writes and drives
+ * the bound at exactly that number and at one below it. The rule is
+ * `size > limit`: a document of exactly `maxFileBytes` bytes is read, and one
+ * byte more is refused unread.
+ */
+test('maxFileBytes bites at exactly one byte over the bound, and not at the bound', async () => {
+  const files = clean()
+  // The bound applies per document, so the number that decides whether any of
+  // them is refused is the size of the largest one, written exactly as
+  // `withRoot` writes it.
+  const size = Math.max(...Object.values(files)
+    .map((document) => Buffer.byteLength(`${JSON.stringify(document, null, 2)}\n`, 'utf8')))
+
+  const atBound = await cliReport(files, ['--max-file-bytes', String(size)])
+  assert.equal(
+    raisedRules(atBound.report).includes('input-too-large'), false,
+    `a ${size}-byte document is not over a ${size}-byte limit`,
+  )
+  assert.equal(atBound.code, 0, 'and the run that read every document is a pass')
+
+  const oneBelow = await cliReport(files, ['--max-file-bytes', String(size - 1)])
+  assert.equal(
+    raisedRules(oneBelow.report).includes('input-too-large'), true,
+    `a ${size}-byte document is over a ${size - 1}-byte limit`,
+  )
+  assert.match(findingsFor(oneBelow.report, 'input-too-large')[0].message, new RegExp(`is ${size} bytes`))
+  assert.equal(oneBelow.report.status, 'incomplete')
+  assert.equal(oneBelow.code, 2)
+  assert.deepEqual(oneBelow.report.plan.deletions, [], 'a document nobody read is not a licence to destroy anything')
+})
+
 test('maxFindings truncates deliberately, says so, and is never a quiet cut', async () => {
   const report = await apiReport(fixture(
     [
