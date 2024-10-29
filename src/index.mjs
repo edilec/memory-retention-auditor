@@ -31,10 +31,12 @@
  *
  * ## The clock is an input
  *
- * `--today` is required and is parsed like every other date. There is no
- * `Date.now()` and no `new Date()` anywhere in this package: an auditor that
- * read the host clock would answer a different question tomorrow with nothing
- * in its output saying which question it had answered.
+ * `--today` is required and is parsed like every other date. `Date.now()`
+ * appears nowhere in this package and no date is ever constructed from the
+ * current time: an auditor that read the host clock would answer a different
+ * question tomorrow with nothing in its output saying which question it had
+ * answered. The one date object this package builds is the calendar round trip
+ * in `src/dates.mjs`, over numbers the caller supplied.
  */
 
 import { readFile, realpath, stat } from 'node:fs/promises'

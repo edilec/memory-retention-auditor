@@ -13,12 +13,21 @@
  *
  * ## Why there is no clock in this file
  *
- * There is no `Date.now()` and no `new Date()` anywhere in this package. The
- * day an audit is evaluated against is an input: `--today` is required, it is
- * parsed by the same function as every other date, and it is stamped on the
- * plan. A tool that read the host clock would answer a different question
- * tomorrow with nothing in its output saying which question it had answered,
- * and two runs over the same inventory would not produce the same bytes.
+ * `Date.now()` appears nowhere in this package and no date is ever constructed
+ * from the current time. The day an audit is evaluated against is an input:
+ * `--today` is required, it is parsed by the same function as every other date,
+ * and it is stamped on the plan. A tool that read the host clock would answer a
+ * different question tomorrow with nothing in its output saying which question
+ * it had answered, and two runs over the same inventory would not produce the
+ * same bytes.
+ *
+ * `new Date(stamp)` below is the single date object this package constructs,
+ * and `stamp` is `Date.UTC` over the three numbers the caller wrote. It is the
+ * round-trip check and it asks nothing about the present. It is named here
+ * because an earlier wording of this docblock claimed a package with no date
+ * construction in it at all, which is a stronger claim than the code kept -- and
+ * a document that overstates a guarantee is worse than one that is silent about
+ * it, because it reads as coverage.
  */
 
 const DATE_SHAPE = /^(\d{4})-(\d{2})-(\d{2})$/

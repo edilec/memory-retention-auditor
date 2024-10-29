@@ -128,12 +128,15 @@ not have it.
 
 ## The evaluation date is an input
 
-`--today` is required. There is no `Date.now()` and no `new Date()` anywhere in
-this package: an auditor that read the host clock would answer a different
-question tomorrow with nothing in its output saying which question it had
-answered, and two runs over the same inventory would not produce the same bytes.
-The date is parsed like every other date and stamped on the plan as
-`evaluatedOn`.
+`--today` is required. `Date.now()` appears nowhere in this package and no date
+is ever constructed from the current time: an auditor that read the host clock
+would answer a different question tomorrow with nothing in its output saying
+which question it had answered, and two runs over the same inventory would not
+produce the same bytes. The date is parsed like every other date and stamped on
+the plan as `evaluatedOn`. One date object is constructed anywhere in the
+package — `new Date(stamp)` in `src/dates.mjs`, over a `Date.UTC` stamp built
+from the caller's own numbers — and it is the calendar round trip that refuses
+`2026-02-30`.
 
 Expiry is `age >= retainDays`, where age is whole days from the basis date to
 the evaluation date. A class kept for 30 days expires on the thirtieth day after

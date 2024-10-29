@@ -108,3 +108,41 @@ test('no clock is read anywhere in the shipped code', async () => {
   assert.equal(/new Date\(\s*Date\.now/.test(code), false)
   assert.equal(code.includes('Date.UTC('), true, 'and it does still do calendar arithmetic')
 })
+
+/**
+ * The documents claim the guarantee the code keeps, and not a stronger one.
+ *
+ * The README, the `src/dates.mjs` docblock, the `src/index.mjs` docblock, the
+ * rule catalog and the changelog all said there was no `new Date()` anywhere in
+ * this package, while `src/dates.mjs` constructs one on every parsed date. The
+ * guarantee that matters -- no clock is read -- does hold, and the test above
+ * is what holds it; the sentence was simply stronger than the code. A document
+ * that overstates a guarantee is worse than one that is silent about it,
+ * because it reads as coverage, so the wording was corrected rather than the
+ * working round trip being rewritten to chase it.
+ *
+ * This case fails if the absolute wording comes back, and it also fails if a
+ * second date construction is added without the documents being told.
+ */
+test('the documents claim the clock guarantee the code actually keeps', async () => {
+  const code = await shippedCode()
+
+  const constructions = code.match(/new Date\(/g) ?? []
+  assert.equal(constructions.length, 1, 'the documents name one date construction; the code has another')
+  assert.match(code, /new Date\(stamp\)/, 'and it is the round trip over a caller-supplied stamp')
+
+  let named = 0
+  for (const name of ['README.md', 'CHANGELOG.md', 'docs/retention-rules.md', 'src/dates.mjs', 'src/index.mjs']) {
+    const text = await readFile(join(projectDirectory, name), 'utf8').then((raw) => raw.replace(/\s+/g, ' '))
+    assert.equal(
+      /no `new Date\(\)`(?: and no `Date\.now\(\)`)? (?:anywhere )?in (?:this|the) package/.test(text), false,
+      `${name} claims no new Date() in the package, and src/dates.mjs constructs one`,
+    )
+    assert.equal(
+      /There is no `Date\.now\(\)` and no `new Date\(\)`/.test(text), false,
+      `${name} still carries the overclaimed sentence`,
+    )
+    if (text.includes('new Date(stamp)')) named += 1
+  }
+  assert.equal(named >= 3, true, 'the one constructed date is named in the documents that discuss the clock')
+})

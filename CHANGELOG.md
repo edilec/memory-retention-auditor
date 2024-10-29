@@ -31,10 +31,12 @@ here.
   `subject`, `preview` and `note`, and every `description`, never reach stdout,
   stderr or the plan document; a row says which private fields a record declares
   and nothing about what they hold.
-- The evaluation date as a required input. There is no `Date.now()` and no
-  `new Date()` in the package: `--today` is parsed like every other date and
-  stamped on the plan, so two runs over one inventory produce the same bytes and
-  a plan always says which day produced it. Dates are read in one spelling only,
+- The evaluation date as a required input. `Date.now()` appears nowhere in the
+  package and no date is constructed from the current time: `--today` is parsed
+  like every other date and stamped on the plan, so two runs over one inventory
+  produce the same bytes and a plan always says which day produced it. The one
+  date object the package builds is the calendar round trip in `src/dates.mjs`,
+  over a stamp made from the caller's own numbers. Dates are read in one spelling only,
   with the calendar round trip checked, so `2026-02-30` is refused rather than
   rolled into March.
 - A versioned plan: the policy revision, the evaluation date and a SHA-256

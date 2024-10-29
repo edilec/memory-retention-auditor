@@ -47,12 +47,20 @@ a non-empty stderr on a successful run is correct rather than a symptom.
 
 ## Why `--today` is required
 
-This package reads no clock. There is no `Date.now()` and no `new Date()`
-anywhere in it: the day an audit is judged against is an input, it is parsed
-like every other date, and it is stamped on the plan as `evaluatedOn`. An
-auditor that read the host clock would answer a different question tomorrow with
-nothing in its output saying which question it had answered — and two runs over
-the same inventory would not produce the same bytes.
+This package reads no clock. `Date.now()` appears nowhere in it and no date is
+ever constructed from the current time: the day an audit is judged against is an
+input, it is parsed like every other date, and it is stamped on the plan as
+`evaluatedOn`. An auditor that read the host clock would answer a different
+question tomorrow with nothing in its output saying which question it had
+answered — and two runs over the same inventory would not produce the same
+bytes.
+
+Exactly one date object is constructed anywhere here — `new Date(stamp)` in
+`src/dates.mjs`, where `stamp` is `Date.UTC(...)` over the three numbers the
+caller wrote — and it exists to check the calendar round trip that refuses
+`2026-02-30`. It asks nothing about what time it is, and it is named here
+because an earlier wording of this paragraph claimed a package with no date
+construction in it at all — a stronger claim than the code kept.
 
 ## Input
 
