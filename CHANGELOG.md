@@ -7,6 +7,39 @@ here.
 
 ## [Unreleased]
 
+### Fixed
+
+- `plan.status` records the status of the run that produced the document, and
+  is inside the digest. `--out` used to write a signed, digested list of records
+  to destroy from a run that had exited 2 with a record it could not decide
+  about, and nothing in the artefact said the audit had not completed: the only
+  warning was a stderr line that `--json` suppresses. The deletions themselves
+  are not withdrawn -- a record whose class, age and hold status were all read
+  is one this run did decide about -- and the two cases where the list really
+  would be untrustworthy still empty it at the source.
+- A hold that named references none of which could be read is no longer
+  reported as a hold that named nothing. The new `hold-coverage-unreadable`
+  (error) says what happened; `hold-covers-nothing` (warning) is left for the
+  hold that really does name no record and no class. Both messages were
+  previously the same sentence, asserting an absence about a reference sitting
+  in the file -- the same mistake as reporting unreadable evidence as missing
+  evidence, made about the one document that stops a deletion.
+- `location.file` and `location.pointer` are no longer passed through
+  `excerpt`, which collapses runs of whitespace and trims. A file named
+  `my  records.json` was reported as `my records.json`, and a consumer
+  resolving the path the report contract promises is relative to the input root
+  got ENOENT.
+- A value that cannot be converted to a string -- `{"toString": {}}` parses out
+  of JSON and throws on `String(value)` -- is described by its shape,
+  `[object]` or `[array]`, instead of taking the whole run down with an empty
+  stdout at exit 2.
+- The clock guarantee is documented as the code keeps it. The README, the rule
+  catalog, this file and two docblocks all claimed a package that constructs no
+  date object at all, while `src/dates.mjs` builds one on every parsed date for
+  the calendar round trip. No clock is read and none ever was; the sentence was
+  stronger than the code, and a document that overstates a guarantee reads as
+  coverage.
+
 ### Added
 
 - First implementation of `memory-retention-auditor`: reads a memory and
