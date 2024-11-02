@@ -33,12 +33,17 @@ here.
   of JSON and throws on `String(value)` -- is described by its shape,
   `[object]` or `[array]`, instead of taking the whole run down with an empty
   stdout at exit 2.
-- The clock guarantee is documented as the code keeps it. The README, the rule
-  catalog, this file and two docblocks all claimed a package that constructs no
-  date object at all, while `src/dates.mjs` builds one on every parsed date for
-  the calendar round trip. No clock is read and none ever was; the sentence was
-  stronger than the code, and a document that overstates a guarantee reads as
-  coverage.
+- The clock guarantee is documented as the code keeps it, in both halves. The
+  README, the rule catalog, this file and two docblocks all claimed a package
+  that constructs no date object at all, while `src/dates.mjs` builds one on
+  every parsed date for the calendar round trip. The same sentences then said
+  the package "reads no clock", while `src/index.mjs` defaults the time budget
+  to `performance.now()` -- a clock, read on every run, a few dozen lines below
+  the claim. What holds is that no *wall* clock is read and that no clock
+  reading reaches the report, and that is what the README, the help text, the
+  rule catalog and the docblocks now say. Neither the round trip nor the budget
+  was rewritten to chase a sentence: a document that overstates a guarantee
+  reads as coverage, which is the thing being fixed.
 
 ### Added
 

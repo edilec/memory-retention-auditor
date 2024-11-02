@@ -68,7 +68,7 @@ test('a missing --root or --today is a configuration error, and says which', asy
     assert.equal(noToday.code, 2)
     assert.equal(noToday.stdout, '')
     assert.match(noToday.stderr, /--today is required/)
-    assert.match(noToday.stderr, /reads no clock/)
+    assert.match(noToday.stderr, /reads no wall clock/)
   })
 })
 

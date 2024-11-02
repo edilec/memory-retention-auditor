@@ -47,10 +47,13 @@ a non-empty stderr on a successful run is correct rather than a symptom.
 
 ## Why `--today` is required
 
-This package reads no clock. `Date.now()` appears nowhere in it and no date is
-ever constructed from the current time: the day an audit is judged against is an
-input, it is parsed like every other date, and it is stamped on the plan as
-`evaluatedOn`. An auditor that read the host clock would answer a different
+No wall clock is read here. `Date.now()` appears nowhere in this package and no
+date is ever constructed from the current time: the day an audit is judged
+against is an input, it is parsed like every other date, and it is stamped on
+the plan as `evaluatedOn`. The one clock this package does read is the injected
+monotonic source the time budget uses — `--max-runtime-ms`, defaulting to
+`performance.now()` — and it produces no value that reaches the report, only the
+`time-budget-exceeded` finding when the bound is passed. An auditor that read the host clock would answer a different
 question tomorrow with nothing in its output saying which question it had
 answered — and two runs over the same inventory would not produce the same
 bytes.

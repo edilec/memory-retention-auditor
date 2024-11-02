@@ -84,10 +84,12 @@ Every option that carries a value may be given only once: a repeated flag is a
 configuration error, not a silent last-wins.
 
 Why --today is required:
-  This package reads no clock. The day an audit is judged against is an input,
+  No wall clock is read here. The day an audit is judged against is an input,
   it is parsed like every other date, and it is stamped on the plan -- so two
   runs over the same inventory and the same date produce the same bytes, and a
-  plan always says which day produced it.
+  plan always says which day produced it. The only clock this tool reads is the
+  monotonic one behind --max-runtime-ms, and no reading from it reaches the
+  report.
 
 Writing the plan:
   --out is checked before anything is read and long before anything is written.
@@ -191,7 +193,7 @@ function parseArguments(argv) {
 
   if (options.root === null) throw new Error('--root is required')
   if (options.today === null) {
-    throw new Error('--today is required: this tool reads no clock, so the day the audit is evaluated against is an input')
+    throw new Error('--today is required: this tool reads no wall clock, so the day the audit is evaluated against is an input')
   }
   /*
    * Accepted and ignored is how a documented option quietly stops being

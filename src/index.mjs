@@ -37,6 +37,12 @@
  * question tomorrow with nothing in its output saying which question it had
  * answered. The one date object this package builds is the calendar round trip
  * in `src/dates.mjs`, over numbers the caller supplied.
+ *
+ * "Reads no clock" was the older, shorter wording, and it was not true: the
+ * time budget reads an injected monotonic source, defaulting to
+ * `performance.now()` a few dozen lines below this. No wall clock is read, and
+ * no clock reading reaches the report -- that is the guarantee, and the shorter
+ * sentence claimed a larger one.
  */
 
 import { readFile, realpath, stat } from 'node:fs/promises'
@@ -402,7 +408,7 @@ function emptyState(files, today) {
  * @param {object} options
  * @param {string} options.root Directory holding the four documents.
  * @param {string} options.today The evaluation date, `YYYY-MM-DD`. Required:
- *   this package reads no clock, so the day an audit is judged against is an
+ *   no wall clock is read here, so the day an audit is judged against is an
  *   input and is stamped on the plan.
  * @param {string} [options.records] Inventory file, relative to the root.
  * @param {string} [options.policy] Retention and access policy, relative to the root.
@@ -429,7 +435,7 @@ export async function auditMemoryRetention(options = {}) {
   const parsedToday = parseDate(options.today)
   if (!parsedToday.ok) {
     throw new TypeError(
-      'today must be a calendar date written as YYYY-MM-DD; it is the day the audit is evaluated against and this tool reads no clock',
+      'today must be a calendar date written as YYYY-MM-DD; it is the day the audit is evaluated against and this tool reads no wall clock',
     )
   }
   const today = parsedToday.date

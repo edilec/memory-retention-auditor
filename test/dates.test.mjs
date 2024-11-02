@@ -98,11 +98,13 @@ test('the comment stripper really does remove the prose, and keep the code', asy
   assert.equal(code.length > 5000, true)
 })
 
-test('no clock is read anywhere in the shipped code', async () => {
+test('no wall clock is read anywhere in the shipped code', async () => {
   const code = await shippedCode()
 
   // `Date.UTC` is arithmetic on numbers a caller supplied; `new Date(stamp)` is
   // the round-trip check on those same numbers. Neither asks what time it is.
+  // The monotonic budget clock is a different question, asserted in the case
+  // below; this one is about the wall clock, and the name says so.
   assert.equal(/Date\.now\s*\(/.test(code), false, 'the code reads the wall clock')
   assert.equal(/new Date\(\s*\)/.test(code), false, 'the code constructs a date from the wall clock')
   assert.equal(/new Date\(\s*Date\.now/.test(code), false)
@@ -145,4 +147,41 @@ test('the documents claim the clock guarantee the code actually keeps', async ()
     if (text.includes('new Date(stamp)')) named += 1
   }
   assert.equal(named >= 3, true, 'the one constructed date is named in the documents that discuss the clock')
+})
+
+/**
+ * The other half of the same overclaim, and the half the last correction left
+ * standing.
+ *
+ * "This package reads no clock" survived in the README, the help text, two
+ * docblocks and a thrown message while `src/index.mjs` defaults the time budget
+ * to `performance.now()` -- a clock, read on every run, a few dozen lines below
+ * the sentence. The guarantee is that no WALL clock is read and that no clock
+ * reading reaches the report, which is what the sibling tool's catalog says and
+ * what this one now says too.
+ *
+ * This case fails if the absolute wording comes back, and it fails if a second
+ * clock source is introduced without the documents being told.
+ */
+test('the documents claim the clock guarantee this package keeps, not a larger one', async () => {
+  const code = await shippedCode()
+
+  // One clock source, and it is the injected monotonic default for the budget.
+  const reads = code.match(/performance\.now\(|Date\.now\(|hrtime/g) ?? []
+  assert.deepEqual(reads, ['performance.now('], 'the shipped code reads a clock the documents do not name')
+  assert.match(code, /options\.clock \?\? \(\(\) => performance\.now\(\)\)/)
+
+  for (const name of ['README.md', 'docs/retention-rules.md', 'src/index.mjs', 'bin/memory-retention-auditor.mjs']) {
+    const text = await readFile(join(projectDirectory, name), 'utf8').then((raw) => raw.replace(/\s+/g, ' '))
+    assert.equal(
+      /reads? no clock/.test(text), false,
+      `${name} claims no clock at all, and the time budget reads one`,
+    )
+  }
+
+  // And the honest sentence is actually there, rather than the claim having
+  // been deleted and nothing put in its place.
+  const readme = await readFile(join(projectDirectory, 'README.md'), 'utf8')
+  assert.match(readme, /No wall clock is read/)
+  assert.match(readme, /monotonic/)
 })

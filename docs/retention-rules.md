@@ -305,6 +305,13 @@ ICU data that differs between Node builds, so two correct machines would
 disagree about the same output — and about the order of a list of records to
 destroy.
 
+No wall clock reaches the report. The only clock is the injected monotonic one
+the time budget uses — `performance.now()` unless a caller supplies its own —
+and the only thing it can put in the output is `time-budget-exceeded`, which
+withdraws every disposition rather than reporting a reading. That is why two
+runs over the same inventory and the same `--today` produce byte-identical
+stdout.
+
 ## Writing the plan
 
 `--out` writes the versioned deletion plan. It is checked before anything is
