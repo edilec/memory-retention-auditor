@@ -72,6 +72,21 @@ export function buildPlan(sink, files, compiled, context, budget) {
 
   const classById = new Map(policy.entries.map((entry) => [entry.id, entry]))
   const recordIds = new Set(records.entries.map((entry) => entry.id))
+
+  /*
+   * "That document does not list it" is an absence, and a partly read document
+   * cannot establish one.
+   *
+   * A reference that matches nothing compiled has two possible explanations,
+   * and they call for opposite actions: the reference really is stale, or the
+   * entry that would have matched it was refused and is sitting in the file.
+   * Reporting the second as the first tells a reviewer to withdraw a hold that
+   * is doing its job. `refusedIds` names the refused entries whose id was
+   * readable, so every other id can still be reported as genuinely absent, and
+   * `anonymousRefusals` counts the ones whose id was not -- those could have
+   * been any id, so while there is one, no absence in that document holds.
+   */
+  const unconfirmed = (document, id) => document.refusedIds.has(id) || document.anonymousRefusals > 0
   const evidenceByRecord = new Map((evidence?.entries ?? []).map((entry) => [entry.record, entry]))
   const ambiguousEvidence = evidence?.ambiguous ?? new Set()
 
@@ -274,6 +289,16 @@ export function buildPlan(sink, files, compiled, context, budget) {
         covers += 1
         continue
       }
+      if (unconfirmed(records, id)) {
+        sink.add({
+          file: files.holds,
+          pointer: hold.pointer,
+          ruleId: 'hold-record-unreadable',
+          message: `Hold "${excerpt(hold.id, 120)}" covers record "${excerpt(id, 120)}", and ${files.records} was read only in part, so whether it lists that record is unknown. That is not the same as the inventory not listing it, and it is not reported as such.`,
+          suggestion: 'Correct the refused inventory entries; the finding on each one says what was wrong with it.',
+        })
+        continue
+      }
       sink.add({
         file: files.holds,
         pointer: hold.pointer,
@@ -285,6 +310,16 @@ export function buildPlan(sink, files, compiled, context, budget) {
     for (const id of hold.classes) {
       if (classById.has(id)) {
         covers += 1
+        continue
+      }
+      if (unconfirmed(policy, id)) {
+        sink.add({
+          file: files.holds,
+          pointer: hold.pointer,
+          ruleId: 'hold-class-unreadable',
+          message: `Hold "${excerpt(hold.id, 120)}" covers class "${excerpt(id, 120)}", and ${files.policy} was read only in part, so whether it declares that class is unknown. That is not the same as the policy not declaring it, and it is not reported as such.`,
+          suggestion: 'Correct the refused policy entries; the finding on each one says what was wrong with it.',
+        })
         continue
       }
       sink.add({
@@ -329,6 +364,16 @@ export function buildPlan(sink, files, compiled, context, budget) {
 
   for (const supplied of evidence?.entries ?? []) {
     if (recordIds.has(supplied.record)) continue
+    if (unconfirmed(records, supplied.record)) {
+      sink.add({
+        file: files.evidence,
+        pointer: supplied.pointer,
+        ruleId: 'deletion-evidence-unreadable-record',
+        message: `This evidence claims record "${excerpt(supplied.record, 120)}", and ${files.records} was read only in part, so whether it lists that record is unknown. That is not the same as the inventory not listing it, and it is not reported as such.`,
+        suggestion: 'Correct the refused inventory entries; the finding on each one says what was wrong with it.',
+      })
+      continue
+    }
     sink.add({
       file: files.evidence,
       pointer: supplied.pointer,

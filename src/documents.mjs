@@ -260,6 +260,34 @@ function openEntry(sink, file, pointer, raw, spec, byId) {
 }
 
 /**
+ * The ids a document declared and this build could not compile.
+ *
+ * "`records.json` does not list that record" is an absence, and it cannot be
+ * established from a document that was only partly read: the entry that was
+ * refused may be the very one the hold names. A refused entry with a readable
+ * id is recorded by that id, so every other id can still be reported as
+ * genuinely absent; a refused entry whose id was itself unreadable could have
+ * been any id at all, which is what `anonymous` counts.
+ *
+ * Without this, a hold covering a record whose entry was refused was reported
+ * as covering a record the inventory does not list -- "the hold is stale" said
+ * about the one document in this package that stops a deletion.
+ */
+function refusalLedger() {
+  const refusedIds = new Set()
+  const state = { anonymousRefusals: 0 }
+  return {
+    refuse(raw) {
+      if (isPlainObject(raw) && isIdentifier(raw.id)) refusedIds.add(raw.id)
+      else state.anonymousRefusals += 1
+    },
+    result() {
+      return { refusedIds, anonymousRefusals: state.anonymousRefusals }
+    },
+  }
+}
+
+/**
  * A list of references to entries in another document.
  *
  * A member that is not a name is refused and counted: a hold whose coverage is
@@ -323,7 +351,8 @@ function readReferences(sink, file, pointer, field, raw, spec, limits) {
 /**
  * Compile `records.json`: the memory and session inventory.
  *
- * @returns {{declared: number, entries: Array<object>, refusedReferences: number}|null}
+ * @returns {{declared: number, entries: Array<object>, refusedReferences: number,
+ *   refusedIds: Set<string>, anonymousRefusals: number}|null}
  */
 export function compileRecords(sink, file, value, limits) {
   const document = openDocument(sink, file, value, RECORD_DOCUMENT_KEYS)
@@ -342,12 +371,16 @@ export function compileRecords(sink, file, value, limits) {
   }
   const byId = new Map()
   const entries = []
+  const ledger = refusalLedger()
   let refusedReferences = 0
 
   for (let index = 0; index < list.length; index += 1) {
     const pointer = `/records/${index}`
     const raw = list[index]
-    if (!openEntry(sink, file, pointer, raw, spec, byId)) continue
+    if (!openEntry(sink, file, pointer, raw, spec, byId)) {
+      ledger.refuse(raw)
+      continue
+    }
 
     let classId = null
     if (!isIdentifier(raw.class)) {
@@ -376,7 +409,10 @@ export function compileRecords(sink, file, value, limits) {
     const privateFields = readPrivateFields(sink, file, pointer, raw, PRIVATE_RECORD_KEYS, 'record-invalid')
 
     if (classId === null || created === null || lastAccessed === null || state === null
-      || readers === null || privateFields === null) continue
+      || readers === null || privateFields === null) {
+      ledger.refuse(raw)
+      continue
+    }
 
     refusedReferences += readers.refused
     byId.set(raw.id, pointer)
@@ -393,14 +429,15 @@ export function compileRecords(sink, file, value, limits) {
   }
 
   entries.sort((left, right) => (left.id === right.id ? 0 : left.id < right.id ? -1 : 1))
-  return { declared: list.length, entries, refusedReferences }
+  return { declared: list.length, entries, refusedReferences, ...ledger.result() }
 }
 
 /**
  * Compile `policy.json`: the version stamped on the plan, and one retention and
  * access rule per class.
  *
- * @returns {{version: string|null, declared: number, entries: Array<object>, refusedReferences: number}|null}
+ * @returns {{version: string|null, declared: number, entries: Array<object>, refusedReferences: number,
+ *   refusedIds: Set<string>, anonymousRefusals: number}|null}
  */
 export function compilePolicy(sink, file, value, limits) {
   const document = openDocument(sink, file, value, POLICY_DOCUMENT_KEYS)
@@ -443,12 +480,16 @@ export function compilePolicy(sink, file, value, limits) {
   }
   const byId = new Map()
   const entries = []
+  const ledger = refusalLedger()
   let refusedReferences = 0
 
   for (let index = 0; index < list.length; index += 1) {
     const pointer = `/classes/${index}`
     const raw = list[index]
-    if (!openEntry(sink, file, pointer, raw, spec, byId)) continue
+    if (!openEntry(sink, file, pointer, raw, spec, byId)) {
+      ledger.refuse(raw)
+      continue
+    }
 
     const basis = readWord(sink, file, pointer, 'basis', raw, BASES, 'basis-unsupported', 'retention basis')
 
@@ -488,7 +529,10 @@ export function compilePolicy(sink, file, value, limits) {
     const privateFields = readPrivateFields(sink, file, pointer, raw, ['description'], 'class-invalid')
 
     if (basis === null || retainDays === null || requiresEvidence === null
-      || allowedReaders === null || privateFields === null) continue
+      || allowedReaders === null || privateFields === null) {
+      ledger.refuse(raw)
+      continue
+    }
 
     refusedReferences += allowedReaders.refused
     byId.set(raw.id, pointer)
@@ -498,7 +542,7 @@ export function compilePolicy(sink, file, value, limits) {
   }
 
   entries.sort((left, right) => (left.id === right.id ? 0 : left.id < right.id ? -1 : 1))
-  return { version, declared: list.length, entries, refusedReferences }
+  return { version, declared: list.length, entries, refusedReferences, ...ledger.result() }
 }
 
 /**

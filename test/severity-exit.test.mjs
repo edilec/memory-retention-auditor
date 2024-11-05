@@ -99,6 +99,19 @@ const ERROR_CASES = [
   ['hold-record-unknown', fixture(
     [record('session-2031', 'chat-transcript')], transcripts, [hold('matter-1', 'released', ['session-0001'])],
   ), [], 1],
+  ['hold-record-unreadable', fixture(
+    [record('session-2031', 'chat-transcript'), record('session-0001', 'chat-transcript', { state: 42 })],
+    transcripts, [hold('matter-1', 'released', ['session-0001'])],
+  ), [], 2],
+  ['hold-class-unreadable', fixture(
+    [record('session-2031', 'chat-transcript')],
+    [...transcripts, policyClass('voice-note', 'created', 'ninety', false, ['support-agent'])],
+    [hold('matter-1', 'released', [], ['voice-note'])],
+  ), [], 2],
+  ['deletion-evidence-unreadable-record', fixture(
+    [record('session-2031', 'chat-transcript'), record('session-0001', 'chat-transcript', { state: 42 })],
+    transcripts, [], [evidence('session-0001')],
+  ), [], 2],
   ['hold-status-unsupported', fixture(
     [record('session-2031', 'chat-transcript')], transcripts, [hold('matter-1', 'suspended', ['session-2031'])],
   ), [], 2],

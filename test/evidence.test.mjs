@@ -282,6 +282,101 @@ test('a hold with one readable reference beside a refused one is neither of thos
   assert.equal(raisedRules(report).includes('record-reference-invalid'), true)
 })
 
+/**
+ * The same absent-versus-unreadable split, one loop further on.
+ *
+ * `hold-record-unknown`, `hold-class-unknown` and
+ * `deletion-evidence-unknown-record` all say "that document does not list it".
+ * That is an absence, and a document read only in part cannot establish one:
+ * the entry that was refused may be the very one the reference names. Told the
+ * absence, a reviewer withdraws a hold that is doing its job.
+ *
+ * The split has to keep the genuine finding as well as add the honest one, so
+ * each case below drives a refused entry AND a really-stale reference through
+ * the same run, and asserts that the two references are answered differently.
+ */
+test('a hold covering a record whose entry was refused is not told the inventory lacks it', async () => {
+  const report = await apiReport(fixture(
+    [
+      record('session-2031', 'chat-transcript'),
+      record('session-0001', 'chat-transcript', { state: 42 }),
+    ],
+    transcripts(),
+    [hold('matter-4411', 'released', ['session-0001', 'session-ghost'])],
+    [],
+  ))
+
+  const unreadable = findingsFor(report, 'hold-record-unreadable')
+  const unknown = findingsFor(report, 'hold-record-unknown')
+  assert.equal(unreadable.length, 1)
+  assert.match(unreadable[0].message, /session-0001/)
+  assert.match(unreadable[0].message, /not the same as the inventory not listing it/)
+  // The genuinely stale reference in the same hold still gets the old answer.
+  assert.equal(unknown.length, 1)
+  assert.match(unknown[0].message, /session-ghost/)
+  assert.equal(report.status, 'incomplete')
+})
+
+test('evidence claiming a record whose entry was refused is not told the inventory lacks it', async () => {
+  const report = await apiReport(fixture(
+    [
+      record('session-2031', 'chat-transcript'),
+      record('session-0001', 'chat-transcript', { state: 42 }),
+    ],
+    transcripts(),
+    [],
+    [evidence('session-0001'), evidence('session-ghost')],
+  ))
+
+  assert.equal(findingsFor(report, 'deletion-evidence-unreadable-record').length, 1)
+  assert.match(findingsFor(report, 'deletion-evidence-unreadable-record')[0].message, /session-0001/)
+  assert.equal(findingsFor(report, 'deletion-evidence-unknown-record').length, 1)
+  assert.match(findingsFor(report, 'deletion-evidence-unknown-record')[0].message, /session-ghost/)
+})
+
+test('a hold covering a class whose entry was refused is not told the policy lacks it', async () => {
+  const report = await apiReport(fixture(
+    [record('session-2031', 'chat-transcript')],
+    [...transcripts(), policyClass('voice-note', 'created', 'ninety', false, ['support-agent'])],
+    [hold('matter-4411', 'released', [], ['voice-note', 'class-ghost'])],
+    [],
+  ))
+
+  assert.equal(findingsFor(report, 'hold-class-unreadable').length, 1)
+  assert.match(findingsFor(report, 'hold-class-unreadable')[0].message, /voice-note/)
+  assert.equal(findingsFor(report, 'hold-class-unknown').length, 1)
+  assert.match(findingsFor(report, 'hold-class-unknown')[0].message, /class-ghost/)
+})
+
+test('a refused entry with no readable id withdraws every absence claim in that document', async () => {
+  // The refused entry could have been any record, so no id can be reported as
+  // absent from the inventory while one is outstanding.
+  const report = await apiReport(fixture(
+    [record('session-2031', 'chat-transcript'), record(42, 'chat-transcript')],
+    transcripts(),
+    [hold('matter-4411', 'released', ['session-ghost'])],
+    [],
+  ))
+
+  assert.equal(findingsFor(report, 'hold-record-unreadable').length, 1)
+  assert.equal(findingsFor(report, 'hold-record-unknown').length, 0)
+})
+
+test('a whole inventory that compiled still reports a stale hold as stale', async () => {
+  // The other half: a split that answered "unknown" for everything would pass
+  // every case above while making the stale-hold check useless.
+  const report = await apiReport(fixture(
+    [record('session-2031', 'chat-transcript')],
+    transcripts(),
+    [hold('matter-4411', 'released', ['session-ghost'])],
+    [],
+  ))
+
+  assert.deepEqual(raisedRules(report), ['hold-record-unknown'])
+  assert.equal(findingsFor(report, 'hold-record-unreadable').length, 0)
+  assert.equal(report.status, 'fail')
+})
+
 test('the clean fixture passes, so every case above broke exactly one thing', async () => {
   const run = await cliReport(clean())
 

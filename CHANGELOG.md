@@ -45,6 +45,18 @@ here.
   was rewritten to chase a sentence: a document that overstates a guarantee
   reads as coverage, which is the thing being fixed.
 
+- "The inventory does not list that record" is no longer said about a document
+  that was read only in part. A hold covering a record whose entry was refused
+  reported `hold-record-unknown` -- "either the inventory is missing a record
+  under hold or the hold is stale" -- about a record sitting in the file, which
+  is advice to withdraw a hold that is doing its job.
+  `hold-record-unreadable`, `hold-class-unreadable` and
+  `deletion-evidence-unreadable-record` say what happened instead. The refused
+  entries are tracked by id where the id was readable, so a reference that
+  really is stale is still reported as stale; an entry whose id was itself
+  unreadable could have been any id, so while one stands, no absence in that
+  document is claimed. The catalog is 54 rules, 50 error and 4 warning.
+
 ### Added
 
 - First implementation of `memory-retention-auditor`: reads a memory and

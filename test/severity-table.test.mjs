@@ -51,8 +51,8 @@ test('the catalog is the size and shape the documentation claims', () => {
   const ruleIds = Object.keys(RULE_SEVERITY)
   const severities = Object.values(RULE_SEVERITY)
 
-  assert.equal(ruleIds.length, 51)
-  assert.equal(severities.filter((severity) => severity === 'error').length, 47)
+  assert.equal(ruleIds.length, 54)
+  assert.equal(severities.filter((severity) => severity === 'error').length, 50)
   assert.equal(severities.filter((severity) => severity === 'warning').length, 4)
 
   for (const ruleId of ruleIds) assert.match(ruleId, /^[a-z][a-z0-9-]*[a-z0-9]$/)

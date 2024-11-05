@@ -235,11 +235,14 @@ code cannot be edited at all.
 | `deletion-evidence-unknown` | error | The inventory says a record was deleted and the evidence document could not be read in full, so whether it is accounted for is unknown. Not the same as missing, and never reported as missing. |
 | `deletion-evidence-duplicate` | error | Two evidence entries claim one record. Ambiguous rather than cumulative; neither is used. |
 | `deletion-evidence-unknown-record` | error | Evidence claims a record the inventory does not list. |
+| `deletion-evidence-unreadable-record` | error | Evidence claims a record and the inventory was read only in part, so whether it lists that record is unknown. Not the same fact as the inventory not listing it, and never reported as that one. |
 | `deletion-evidence-contradicts-state` | error | Evidence says a record was deleted and the inventory says it is retained. One document is wrong and this tool cannot tell which. |
 | `deletion-under-hold` | error | The inventory says a record was deleted while a hold over it was active. |
 | `hold-coverage-unknown` | error | Part of the hold document went unread, so nothing in the run was planned for deletion. |
 | `hold-record-unknown` | error | A hold covers a record the inventory does not list: either the inventory is missing a record under hold or the hold is stale. |
+| `hold-record-unreadable` | error | A hold covers a record and the inventory was read only in part, so whether it lists that record is unknown. Not the same fact as the inventory not listing it, and never reported as that one. |
 | `hold-class-unknown` | error | A hold covers a class the policy does not declare. |
+| `hold-class-unreadable` | error | A hold covers a class and the policy was read only in part, so whether it declares that class is unknown. Not the same fact as the policy not declaring it, and never reported as that one. |
 | `hold-coverage-unreadable` | error | A hold names references and every one of them was refused, so what it protects is unknown. Not the same as naming nothing, and never reported as naming nothing. |
 | `hold-covers-nothing` | warning | A hold names no record and no class. |
 

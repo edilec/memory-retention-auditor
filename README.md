@@ -182,6 +182,15 @@ is an absence, and asserting it about a reference that is sitting in the file,
 refused, is the same mistake as reporting unreadable evidence as missing
 evidence.
 
+The same rule governs a reference that matches nothing compiled. "The inventory
+does not list that record" is an absence too, and a document read only in part
+cannot establish one — the entry that was refused may be the very one the hold
+names. While an entry of `records.json` or `policy.json` stands refused, a
+reference to it raises `hold-record-unreadable`, `hold-class-unreadable` or
+`deletion-evidence-unreadable-record` instead of the `-unknown` rule that says
+the reference is stale. Every other id is still reported as genuinely absent:
+withdrawing the whole check would be the same defect in the other direction.
+
 ### The plan is versioned, and it says whether the audit finished
 
 `plan.version` is the `version` the policy declares, `plan.evaluatedOn` is the
