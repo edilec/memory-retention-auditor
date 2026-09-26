@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1",
+  "records": [
+    {
+      "id": "session-1900",
+      "class": "chat-transcript",
+      "created": "2025-12-01",
+      "lastAccessed": "2026-01-01",
+      "state": "retained",
+      "readers": ["support-agent"],
+      "subject": "subject-b2"
+    },
+    {
+      "id": "session-1901",
+      "class": "chat-transcript",
+      "created": "2025-12-01",
+      "lastAccessed": "2026-01-02",
+      "state": "retained",
+      "readers": ["support-agent"],
+      "subject": "subject-c3"
+    },
+    {
+      "id": "session-1998",
+      "class": "chat-transcript",
+      "created": "2026-01-01",
+      "lastAccessed": "2026-02-01",
+      "state": "deleted",
+      "readers": ["support-agent"]
+    }
+  ]
+}

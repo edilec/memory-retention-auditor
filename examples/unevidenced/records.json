@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1",
+  "records": [
+    {
+      "id": "session-1998",
+      "class": "chat-transcript",
+      "created": "2026-01-01",
+      "lastAccessed": "2026-02-01",
+      "state": "deleted",
+      "readers": ["support-agent"]
+    },
+    {
+      "id": "session-2031",
+      "class": "chat-transcript",
+      "created": "2026-07-01",
+      "lastAccessed": "2026-09-10",
+      "state": "retained",
+      "readers": ["support-agent", "marketing-bot"]
+    }
+  ]
+}

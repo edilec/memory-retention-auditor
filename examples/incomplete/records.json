@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1",
+  "records": [
+    {
+      "id": "session-2031",
+      "class": "chat-transcript",
+      "created": "2026-07-01",
+      "lastAccessed": "2026-09-10",
+      "state": "retained",
+      "readers": ["support-agent"]
+    },
+    {
+      "id": "voice-0001",
+      "class": "customer-voice",
+      "created": "2026-01-01",
+      "lastAccessed": "2026-01-02",
+      "state": "retained",
+      "readers": ["support-agent"],
+      "note": "Names a class the policy does not declare, so how long it may be kept is unknown."
+    }
+  ]
+}

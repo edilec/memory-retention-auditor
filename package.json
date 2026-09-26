@@ -1,0 +1,53 @@
+{
+  "name": "memory-retention-auditor",
+  "version": "0.1.0",
+  "description": "Audit a memory and session inventory against its retention and access policy, produce a deletion plan, and verify supplied deletion evidence. Deletes nothing and prints no private content.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "lint": "node --check src/audit.mjs && node --check src/dates.mjs && node --check src/documents.mjs && node --check src/index.mjs && node --check src/parse-failure.mjs && node --check src/rules.mjs && node --check src/text.mjs && node --check src/write-guard.mjs && node --check bin/memory-retention-auditor.mjs && node --check test/cli.test.mjs && node --check test/dates.test.mjs && node --check test/destination.test.mjs && node --check test/documents.test.mjs && node --check test/evidence.test.mjs && node --check test/examples.test.mjs && node --check test/expiry.test.mjs && node --check test/finding-contract.test.mjs && node --check test/incomplete.test.mjs && node --check test/limits.test.mjs && node --check test/no-network.test.mjs && node --check test/ordering-equivalence.test.mjs && node --check test/ordering.test.mjs && node --check test/parse-failure.test.mjs && node --check test/plan-digest.test.mjs && node --check test/read-only.test.mjs && node --check test/redaction.test.mjs && node --check test/sanitisation.test.mjs && node --check test/severity-exit.test.mjs && node --check test/severity-table.test.mjs && node --check test/support.mjs",
+    "test": "node --test",
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-include=src/**",
+    "example": "node bin/memory-retention-auditor.mjs --root examples/clean --today 2026-09-14",
+    "pack:check": "npm pack --dry-run",
+    "check": "npm run lint && npm test && npm run example && npm run pack:check"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/edilec/memory-retention-auditor.git"
+  },
+  "bin": {
+    "memory-retention-auditor": "./bin/memory-retention-auditor.mjs"
+  },
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "examples",
+    "docs",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "memory",
+    "retention",
+    "data-retention",
+    "legal-hold",
+    "deletion",
+    "privacy",
+    "agent",
+    "audit",
+    "cli"
+  ],
+  "author": "Edilec Private Limited",
+  "bugs": {
+    "url": "https://github.com/edilec/memory-retention-auditor/issues"
+  },
+  "homepage": "https://github.com/edilec/memory-retention-auditor#readme"
+}
