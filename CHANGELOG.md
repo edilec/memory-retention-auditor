@@ -5,7 +5,7 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Rule ids are
 part of the public surface: renaming one is a breaking change and is recorded
 here.
 
-## [Unreleased]
+## [0.1.0] - 2026-10-14
 
 ### Fixed
 
@@ -156,4 +156,4 @@ here.
   itself, so two machines disagreeing about it would be two reviewers approving
   two different documents.
 
-No release has been published.
+GitHub source release v0.1.0 — 2026-10-14.
